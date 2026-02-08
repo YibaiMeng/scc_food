@@ -1,6 +1,6 @@
 # SCC Food Facility Data
 
-Syncs Santa Clara County Department of Environmental Health food facility inspection data into a local SQLite database with full change history.
+Syncs Santa Clara County Department of Environmental Health food facility inspection data into a local SQLite database with full change history, and publishes a public map website via Cloudflare.
 
 ## Data Source
 
@@ -11,6 +11,22 @@ Syncs Santa Clara County Department of Environmental Health food facility inspec
 | [BUSINESS](https://data.sccgov.org/Environment/SCC_DEH_Food_Data_BUSINESS/vuw7-jmjk) | Facility name, address, coordinates, phone | `vuw7-jmjk` |
 | [INSPECTIONS](https://data.sccgov.org/Health/SCC_DEH_Food_Data_INSPECTIONS/2u2d-8jej) | Inspection date, score, result, type | `2u2d-8jej` |
 | [VIOLATIONS](https://data.sccgov.org/Health/SCC_DEH_Food_Data_VIOLATIONS/wkaa-4ccv) | Per-inspection violation details | `wkaa-4ccv` |
+
+## Architecture
+
+```
+[Socrata API] → data/download.py → [scc_food.db (local SQLite)]
+                                           ↓
+                                    db/sync.py (Cloudflare D1 REST API)
+                                           ↓
+                               [Cloudflare D1 database]
+                                           ↓
+                             worker/ (Cloudflare Worker API)
+                                           ↓
+                             frontend/ (Cloudflare Pages map)
+```
+
+The data pipeline runs locally and is completely separate from the website. The website is read-only against D1.
 
 ## Database Schema
 
@@ -38,7 +54,7 @@ Tables join on `business_id` (business ↔ inspection) and `inspection_id` (insp
 | `business_id` | TEXT FK | |
 | `date` | TEXT | YYYYMMDD format |
 | `score` | INTEGER | 0–100 |
-| `result` | TEXT | e.g. `G` (good) |
+| `result` | TEXT | `G` (good), `Y` (yellow), `R` (red) |
 | `type` | TEXT | e.g. `ROUTINE INSPECTION` |
 | `inspection_comment` | TEXT | |
 | `first_seen`, `last_updated` | TEXT | |
@@ -75,16 +91,26 @@ Each run of `download.py` performs an **upsert with change tracking**:
    - **Unchanged** → skip
 3. Commit per table, print summary
 
-This means the main tables always reflect the **current state**, while `changes` gives the full history of every field that ever changed.
+The main tables always reflect the **current state**; `changes` gives the full history of every field that ever changed.
 
 ## Usage
 
-```bash
-# First run — creates scc_food.db and populates all tables
-python data/download.py
+### Update local database
 
-# Subsequent runs — upserts changes, logs diffs
+```bash
 python data/download.py
+```
+
+### Sync to Cloudflare D1
+
+Requires three environment variables (get from Cloudflare dashboard / `wrangler whoami`):
+
+```bash
+export CLOUDFLARE_ACCOUNT_ID=...
+export CLOUDFLARE_D1_DATABASE_ID=...
+export CLOUDFLARE_API_TOKEN=...       # needs D1:Edit permission
+
+python db/sync.py
 ```
 
 ### Query recent changes
@@ -98,9 +124,68 @@ LIMIT 50;
 
 ## Setup
 
+### Local data pipeline
+
 ```bash
 python -m venv venv
 source venv/bin/activate
 pip install requests
 python data/download.py
+```
+
+### Cloudflare (first time only)
+
+```bash
+cd worker
+npm install
+
+# Create D1 database — note the database_id in the output
+npx wrangler d1 create scc-food
+
+# Fill in database_id in worker/wrangler.toml, then apply schema
+npx wrangler d1 execute scc-food --remote --yes --file ../db/schema.sql
+```
+
+### Deploy Worker API
+
+```bash
+cd worker
+npm run deploy
+```
+
+### Deploy frontend
+
+```bash
+npx wrangler pages deploy frontend/public --project-name scc-food-map
+```
+
+## Project Structure
+
+```
+data/
+  download.py          # fetches from Socrata API, upserts into local SQLite
+
+db/
+  schema.sql           # D1 table definitions (no FK constraints — D1 is read-only)
+  sync.py              # pushes local SQLite → Cloudflare D1 via REST API
+
+worker/                # Cloudflare Worker (TypeScript)
+  src/
+    index.ts           # routing + CORS
+    types.ts           # TypeScript interfaces
+    routes/
+      stats.ts         # GET /api/stats
+      facilities.ts    # GET /api/facilities (map markers, cached 1h)
+      facility.ts      # GET /api/facilities/:id (detail)
+  wrangler.toml
+
+frontend/public/       # Cloudflare Pages static site
+  index.html
+  css/app.css
+  js/
+    app.js             # entry point
+    api.js             # API fetch wrappers (set API_BASE here)
+    map.js             # Leaflet map + clustering
+    sidebar.js         # facility detail panel
+    stats.js           # header stats bar
 ```

@@ -1,0 +1,266 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --gray: #9ca3af;
+  --header-h: 52px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+#header {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: #1e293b;
+  color: #f1f5f9;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+
+#header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+}
+.badge-g { background: var(--green); }
+.badge-y { background: var(--yellow); }
+.badge-r { background: var(--red); }
+
+/* ── Main layout ─────────────────────────────────────────── */
+#main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+#map {
+  flex: 1;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+#sidebar {
+  width: 360px;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0,0,0,.12);
+  overflow-y: auto;
+  position: relative;
+  transition: width .2s ease;
+  flex-shrink: 0;
+}
+
+#sidebar.hidden {
+  width: 0;
+  overflow: hidden;
+}
+
+#sidebar-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #64748b;
+  line-height: 1;
+}
+#sidebar-close:hover { color: #0f172a; }
+
+#sidebar-content {
+  padding: 16px 20px 24px;
+}
+
+/* ── Facility detail ─────────────────────────────────────── */
+.facility-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+  padding-right: 28px;
+}
+
+.facility-address {
+  color: #64748b;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.facility-phone {
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #94a3b8;
+  margin: 16px 0 8px;
+}
+
+/* ── Inspection cards ────────────────────────────────────── */
+.inspection-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.inspection-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.score-badge {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.score-high { color: var(--green); }
+.score-mid  { color: var(--yellow); }
+.score-low  { color: var(--red); }
+
+.result-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+.result-G { background: var(--green); }
+.result-Y { background: var(--yellow); }
+.result-R { background: var(--red); }
+.result-unknown { background: var(--gray); }
+
+.inspection-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.inspection-comment {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ── Violations ──────────────────────────────────────────── */
+.violations-list {
+  margin-top: 6px;
+}
+
+.violation-item {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.violation-item:first-child { border-top: none; }
+
+.violation-code {
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.violation-critical-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* ── Map markers ─────────────────────────────────────────── */
+.map-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.8);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+
+.map-marker-G  { background: var(--green); }
+.map-marker-Y  { background: var(--yellow); }
+.map-marker-R  { background: var(--red); }
+.map-marker-null { background: var(--gray); }
+
+.map-marker-pulse {
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+/* ── Cluster icons ───────────────────────────────────────── */
+.cluster-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,.7);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ── Loading ─────────────────────────────────────────────── */
+#loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f1f5f9;
+  font-size: 16px;
+  z-index: 9999;
+}

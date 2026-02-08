@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCC Food Safety Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header id="header">
+    <h1>SCC Food Safety Map</h1>
+    <div id="stats-bar">
+      <span id="stat-facilities">— facilities</span>
+      <span id="stat-avg-score">avg score —</span>
+      <span id="stat-green" class="stat-badge badge-g">G: —</span>
+      <span id="stat-yellow" class="stat-badge badge-y">Y: —</span>
+      <span id="stat-red" class="stat-badge badge-r">R: —</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <aside id="sidebar" class="hidden">
+      <button id="sidebar-close" aria-label="Close">✕</button>
+      <div id="sidebar-content"></div>
+    </aside>
+    <div id="map"></div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

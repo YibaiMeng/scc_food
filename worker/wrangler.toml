@@ -1,0 +1,8 @@
+name = "scc-food-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "scc-food"
+database_id = "39d05335-244e-41b8-9082-4d98f5cd1db5"
