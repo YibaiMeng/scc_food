@@ -7,7 +7,7 @@ const RESULT_COLORS = {
   null: "#9ca3af",
 };
 
-const DETAIL_ZOOM = 16;
+const DETAIL_ZOOM = 17;
 
 function markerColor(result) {
   return RESULT_COLORS[result] ?? RESULT_COLORS.null;
@@ -20,6 +20,12 @@ function tooltipContent(f) {
     ? '<span class="tt-closure">Recent closure</span>'
     : "";
   return `<div class="tt-card"><div class="tt-name">${f.name}</div><div class="tt-row">Score: ${score}${recentR}</div></div>`;
+}
+
+function labelContent(f) {
+  const score = f.latest_score !== null ? f.latest_score : "—";
+  const dot = f.has_recent_red ? '<span class="tt-dot"></span>' : "";
+  return `<span class="tt-label">${f.name} <strong>${score}</strong>${dot}</span>`;
 }
 
 function createMarkerIcon(facility) {
@@ -113,7 +119,7 @@ export function initMap(facilities, onMarkerClick) {
           icon: createMarkerIcon(f),
           title: f.name,
         });
-        marker.bindTooltip(tooltipContent(f), { className: "tt", direction: "top", offset: [0, -10] });
+        marker.bindTooltip(labelContent(f), { className: "tt tt-permanent", direction: "top", offset: [0, -10], permanent: true });
         marker.on("click", () => onMarkerClick(f.business_id));
         marker.addTo(detailLayer);
       }
