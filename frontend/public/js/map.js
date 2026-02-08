@@ -28,9 +28,14 @@ function createMarkerIcon(facility) {
 }
 
 export function initMap(facilities, onMarkerClick) {
+  const SCC_BOUNDS = L.latLngBounds([36.85, -122.30], [37.50, -121.10]);
+
   const map = L.map("map", {
-    center: [37.35, -121.9],
-    zoom: 10,
+    center: [37.345, -121.983],
+    zoom: 12,
+    minZoom: 12,
+    maxBounds: SCC_BOUNDS,
+    maxBoundsViscosity: 1.0,
   });
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
