@@ -1,8 +1,8 @@
+import argparse
 import sqlite3
 import requests
 from datetime import datetime, timezone
 
-DB_FILE = "scc_food.db"
 BASE = "https://data.sccgov.org/resource"
 LIMIT = 1000
 
@@ -201,23 +201,33 @@ SOURCES = [
     ("violation",   f"{BASE}/wkaa-4ccv.json", ["inspection_id", "code"],    normalize_violation),
 ]
 
-now = datetime.now(timezone.utc).isoformat()
 
-conn = sqlite3.connect(DB_FILE)
-conn.executescript(SCHEMA)
+def main():
+    parser = argparse.ArgumentParser(description="Fetch SCC food data into local SQLite")
+    parser.add_argument("db", help="path to SQLite database (e.g. /data/scc_food.db)")
+    args = parser.parse_args()
 
-for table, url, pk_fields, normalize in SOURCES:
-    print(f"syncing {table}...")
-    raw_rows = fetch_all(url)
-    counts = {"inserted": 0, "updated": 0, "unchanged": 0}
-    for raw in raw_rows:
-        row = normalize(raw)
-        if any(row[f] is None for f in pk_fields):
-            continue  # skip rows missing PK
-        status = upsert(conn, table, pk_fields, row, now)
-        counts[status] += 1
-    conn.commit()
-    print(f"  {counts['inserted']} inserted, {counts['updated']} updated, {counts['unchanged']} unchanged")
+    now = datetime.now(timezone.utc).isoformat()
 
-conn.close()
-print(f"\ndone — {DB_FILE}")
+    conn = sqlite3.connect(args.db)
+    conn.executescript(SCHEMA)
+
+    for table, url, pk_fields, normalize in SOURCES:
+        print(f"syncing {table}...")
+        raw_rows = fetch_all(url)
+        counts = {"inserted": 0, "updated": 0, "unchanged": 0}
+        for raw in raw_rows:
+            row = normalize(raw)
+            if any(row[f] is None for f in pk_fields):
+                continue  # skip rows missing PK
+            status = upsert(conn, table, pk_fields, row, now)
+            counts[status] += 1
+        conn.commit()
+        print(f"  {counts['inserted']} inserted, {counts['updated']} updated, {counts['unchanged']} unchanged")
+
+    conn.close()
+    print(f"\ndone — {args.db}")
+
+
+if __name__ == "__main__":
+    main()

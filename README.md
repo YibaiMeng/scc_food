@@ -22,10 +22,10 @@ The data pipeline runs locally and is completely separate from the website. The 
 
 ```bash
 # Run local data sync
-python data/download.py
+python data/download.py /path/to/scc_food.db
 
 # Push to Cloudflare D1
-python db/sync.py
+python db/sync.py /path/to/scc_food.db
 ```
 
 See each component's README for details.

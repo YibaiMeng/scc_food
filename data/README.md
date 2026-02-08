@@ -88,7 +88,7 @@ pip install requests
 ## Usage
 
 ```bash
-python data/download.py
+python data/download.py /path/to/scc_food.db
 ```
 
 ### Query recent changes

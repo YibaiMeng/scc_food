@@ -24,5 +24,5 @@ export CLOUDFLARE_ACCOUNT_ID=...
 export CLOUDFLARE_D1_DATABASE_ID=...
 export CLOUDFLARE_API_TOKEN=...       # needs D1:Edit permission
 
-python db/sync.py
+python db/sync.py /path/to/scc_food.db
 ```

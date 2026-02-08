@@ -7,6 +7,7 @@ Required environment variables:
   CLOUDFLARE_API_TOKEN      — API token with D1 Edit permission
 """
 
+import argparse
 import os
 import sqlite3
 import sys
@@ -14,7 +15,6 @@ from pathlib import Path
 
 import requests
 
-DB_FILE = Path(__file__).parent.parent / "scc_food.db"
 TABLES = ["business", "inspection", "violation"]
 BATCH_SIZE = 100  # statements per API request
 
@@ -63,8 +63,12 @@ def execute_batch(url, token, statements):
 
 
 def main():
-    if not DB_FILE.exists():
-        print(f"ERROR: Database not found at {DB_FILE}", file=sys.stderr)
+    parser = argparse.ArgumentParser(description="Sync local SQLite to Cloudflare D1")
+    parser.add_argument("db", type=Path, help="path to SQLite database (e.g. /data/scc_food.db)")
+    args = parser.parse_args()
+
+    if not args.db.exists():
+        print(f"ERROR: Database not found at {args.db}", file=sys.stderr)
         sys.exit(1)
 
     account_id = get_env("CLOUDFLARE_ACCOUNT_ID")
@@ -72,8 +76,8 @@ def main():
     token = get_env("CLOUDFLARE_API_TOKEN")
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}/query"
 
-    print(f"Connecting to {DB_FILE}...")
-    conn = sqlite3.connect(DB_FILE)
+    print(f"Connecting to {args.db}...")
+    conn = sqlite3.connect(args.db)
 
     for table in TABLES:
         print(f"Syncing {table}...")
