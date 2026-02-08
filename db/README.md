@@ -8,10 +8,10 @@ Pushes the local SQLite database to Cloudflare D1 so the Worker API can serve it
 cd worker
 npm install
 
-# Create D1 database — note the database_id in the output
-npx wrangler d1 create scc-food
+# Create D1 database and auto-update worker/wrangler.toml
+npx wrangler d1 create scc-food --binding DB --update-config
 
-# Fill in database_id in worker/wrangler.toml, then apply schema
+# Apply schema
 npx wrangler d1 execute scc-food --remote --yes --file ../db/schema.sql
 ```
 

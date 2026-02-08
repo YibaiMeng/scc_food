@@ -31,7 +31,7 @@ Prerequisites: Python 3, Node.js.
 2. **Create Cloudflare D1 and sync** — see [db/README.md](db/README.md)
    ```bash
    cd worker && npm install
-   npx wrangler d1 create scc-food        # put the database_id in worker/wrangler.toml
+   npx wrangler d1 create scc-food --binding DB --update-config
    npx wrangler d1 execute scc-food --remote --yes --file db/schema.sql
    python db/sync.py /path/to/scc_food.db
    ```
