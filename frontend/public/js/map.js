@@ -36,7 +36,10 @@ export function initMap(facilities, onMarkerClick) {
     minZoom: 12,
     maxBounds: SCC_BOUNDS,
     maxBoundsViscosity: 1.0,
+    zoomControl: false,
   });
+
+  L.control.zoom({ position: "topright" }).addTo(map);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
