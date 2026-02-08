@@ -1,5 +1,12 @@
 import type { Env, Stats } from "../types";
 
+// One year ago in YYYYMMDD format
+function oneYearAgo(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 1);
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
 export async function handleStats(request: Request, env: Env): Promise<Response> {
   const cache = caches.default;
   const cacheKey = new Request(new URL(request.url).toString());
@@ -7,23 +14,35 @@ export async function handleStats(request: Request, env: Env): Promise<Response>
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
+  const cutoff = oneYearAgo();
+
   const row = await env.DB.prepare(`
     SELECT
-      (SELECT COUNT(*) FROM business) AS total_facilities,
-      (SELECT COUNT(*) FROM inspection) AS total_inspections,
-      (SELECT ROUND(AVG(score), 2) FROM inspection WHERE score IS NOT NULL) AS avg_score,
-      (SELECT COUNT(*) FROM inspection WHERE result = 'G') AS result_g,
-      (SELECT COUNT(*) FROM inspection WHERE result = 'Y') AS result_y,
-      (SELECT COUNT(*) FROM inspection WHERE result = 'R') AS result_r,
-      (SELECT COUNT(*) FROM violation WHERE critical = 1) AS critical_violations
-  `).first<{
+      COUNT(*) AS total_facilities,
+      SUM(CASE WHEN latest_result = 'G' THEN 1 ELSE 0 END) AS status_g,
+      SUM(CASE WHEN latest_result = 'Y' THEN 1 ELSE 0 END) AS status_y,
+      SUM(CASE WHEN latest_result = 'R' THEN 1 ELSE 0 END) AS status_r,
+      (
+        SELECT COUNT(DISTINCT business_id) FROM inspection
+        WHERE result = 'R' AND date >= ?
+      ) AS closures_past_year
+    FROM (
+      SELECT b.business_id,
+        (SELECT result FROM inspection
+         WHERE business_id = b.business_id
+         ORDER BY date DESC,
+           CASE result WHEN 'G' THEN 0 WHEN 'Y' THEN 1 ELSE 2 END
+         LIMIT 1
+        ) AS latest_result
+      FROM business b
+      WHERE b.latitude IS NOT NULL AND b.longitude IS NOT NULL
+    )
+  `).bind(cutoff).first<{
     total_facilities: number;
-    total_inspections: number;
-    avg_score: number;
-    result_g: number;
-    result_y: number;
-    result_r: number;
-    critical_violations: number;
+    status_g: number;
+    status_y: number;
+    status_r: number;
+    closures_past_year: number;
   }>();
 
   if (!row) {
@@ -32,10 +51,10 @@ export async function handleStats(request: Request, env: Env): Promise<Response>
 
   const stats: Stats = {
     total_facilities: row.total_facilities,
-    total_inspections: row.total_inspections,
-    avg_score: row.avg_score,
-    result_distribution: { G: row.result_g, Y: row.result_y, R: row.result_r },
-    critical_violations: row.critical_violations,
+    status_g: row.status_g,
+    status_y: row.status_y,
+    status_r: row.status_r,
+    closures_past_year: row.closures_past_year,
   };
 
   const response = new Response(JSON.stringify(stats), {

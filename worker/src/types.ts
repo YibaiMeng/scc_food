@@ -58,8 +58,8 @@ export interface FacilityDetail {
 
 export interface Stats {
   total_facilities: number;
-  total_inspections: number;
-  avg_score: number;
-  result_distribution: { G: number; Y: number; R: number };
-  critical_violations: number;
+  status_g: number;
+  status_y: number;
+  status_r: number;
+  closures_past_year: number;
 }
