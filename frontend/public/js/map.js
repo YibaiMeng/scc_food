@@ -7,6 +7,8 @@ const RESULT_COLORS = {
   null: "#9ca3af",
 };
 
+const DETAIL_ZOOM = 16;
+
 function markerColor(result) {
   return RESULT_COLORS[result] ?? RESULT_COLORS.null;
 }
@@ -36,33 +38,71 @@ export function initMap(facilities, onMarkerClick) {
     maxZoom: 19,
   }).addTo(map);
 
-  const cluster = L.markerClusterGroup({
-    chunkedLoading: true,
-    iconCreateFunction(group) {
-      const markers = group.getAllChildMarkers();
-      const hasR = markers.some((m) => m.options.result === "R");
-      const hasY = markers.some((m) => m.options.result === "Y");
-      const color = hasR ? "#ef4444" : hasY ? "#eab308" : "#22c55e";
-      const count = group.getChildCount();
-      return L.divIcon({
-        className: "",
-        html: `<div class="cluster-icon" style="background:${color}">${count}</div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-      });
-    },
-  });
+  // Canvas layer: fast overview, always holds all facilities
+  const canvasRenderer = L.canvas();
+  const canvasLayer = L.layerGroup();
+  const canvasMarkers = [];
 
-  for (const f of facilities) {
-    const marker = L.marker([f.latitude, f.longitude], {
-      icon: createMarkerIcon(f),
-      result: f.latest_result,
-      title: f.name,
-    });
-    marker.on("click", () => onMarkerClick(f.business_id));
-    cluster.addLayer(marker);
+  function zoomRadius(zoom) {
+    return Math.max(2, 0.5 * (zoom - 8));
   }
 
-  map.addLayer(cluster);
+  for (const f of facilities) {
+    const color = markerColor(f.latest_result);
+    const cm = L.circleMarker([f.latitude, f.longitude], {
+      renderer: canvasRenderer,
+      radius: zoomRadius(map.getZoom()),
+      color,
+      fillColor: color,
+      fillOpacity: 0.8,
+      weight: 1,
+    });
+    cm.on("click", () => onMarkerClick(f.business_id));
+    cm.addTo(canvasLayer);
+    canvasMarkers.push(cm);
+  }
+
+  // Detail layer: CSS markers, viewport-culled, shown when zoomed in
+  const detailLayer = L.layerGroup();
+  let detailMode = false;
+
+  function refresh() {
+    const zoom = map.getZoom();
+    const wantDetail = zoom >= DETAIL_ZOOM;
+
+    if (!wantDetail) {
+      const r = zoomRadius(zoom);
+      for (const cm of canvasMarkers) cm.setRadius(r);
+    }
+
+    if (wantDetail !== detailMode) {
+      detailMode = wantDetail;
+      if (wantDetail) {
+        map.removeLayer(canvasLayer);
+        map.addLayer(detailLayer);
+      } else {
+        map.removeLayer(detailLayer);
+        map.addLayer(canvasLayer);
+      }
+    }
+
+    if (detailMode) {
+      detailLayer.clearLayers();
+      const bounds = map.getBounds();
+      for (const f of facilities) {
+        if (!bounds.contains([f.latitude, f.longitude])) continue;
+        const marker = L.marker([f.latitude, f.longitude], {
+          icon: createMarkerIcon(f),
+          title: f.name,
+        });
+        marker.on("click", () => onMarkerClick(f.business_id));
+        marker.addTo(detailLayer);
+      }
+    }
+  }
+
+  canvasLayer.addTo(map);
+  map.on("zoomend moveend", refresh);
+
   return map;
 }
