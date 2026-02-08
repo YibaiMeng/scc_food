@@ -18,17 +18,35 @@ Syncs Santa Clara County Department of Environmental Health food facility inspec
 
 The data pipeline runs locally and is completely separate from the website. The website is read-only against D1.
 
-## Quick Start
+## Setup
 
-```bash
-# Run local data sync
-python data/download.py /path/to/scc_food.db
+Prerequisites: Python 3, Node.js.
 
-# Push to Cloudflare D1
-python db/sync.py /path/to/scc_food.db
-```
+1. **Fetch data locally** — see [data/README.md](data/README.md) for schema details
+   ```bash
+   python -m venv venv && source venv/bin/activate && pip install requests
+   python data/download.py /path/to/scc_food.db
+   ```
 
-See each component's README for details.
+2. **Create Cloudflare D1 and sync** — see [db/README.md](db/README.md)
+   ```bash
+   cd worker && npm install
+   npx wrangler d1 create scc-food        # put the database_id in worker/wrangler.toml
+   npx wrangler d1 execute scc-food --remote --yes --file db/schema.sql
+   python db/sync.py /path/to/scc_food.db
+   ```
+
+3. **Deploy Worker API** — see [worker/README.md](worker/README.md)
+   ```bash
+   cd worker && npm run deploy            # note the *.workers.dev URL
+   ```
+
+4. **Deploy frontend** — set `API_BASE` in `frontend/public/js/api.js` to the Worker URL, then see [frontend/README.md](frontend/README.md)
+   ```bash
+   npx wrangler pages deploy frontend/public --project-name scc-food-map
+   ```
+
+**Ongoing:** re-run steps 1–2 to refresh data.
 
 ## Project Structure
 
