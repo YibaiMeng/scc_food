@@ -93,6 +93,30 @@ body {
   background: #f1f5f9;
 }
 
+.period-chips {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+.period-chip {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.period-chip:hover {
+  background: rgba(255,255,255,.3);
+}
+.period-chip.active {
+  background: rgba(255,255,255,.9);
+  color: #1e293b;
+}
+
 /* ── Main layout ─────────────────────────────────────────── */
 #main {
   flex: 1;

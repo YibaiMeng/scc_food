@@ -41,7 +41,11 @@ export async function handleFacilities(request: Request, env: Env): Promise<Resp
             AND i4.result = 'R'
             AND i4.date >= ?
         )
-      ) AS has_recent_red
+      ) AS has_recent_red,
+      (
+        SELECT MAX(i5.date) FROM inspection i5
+        WHERE i5.business_id = b.business_id AND i5.result = 'R'
+      ) AS latest_red_date
     FROM business b
     LEFT JOIN inspection i ON i.inspection_id = (
       SELECT inspection_id FROM inspection

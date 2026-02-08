@@ -17,6 +17,7 @@ export interface FacilityMarker {
   inspection_count: number;
   critical_violation_count: number;
   has_recent_red: number; // 0 or 1
+  latest_red_date: string | null;
 }
 
 export interface Business {
@@ -61,5 +62,4 @@ export interface Stats {
   status_g: number;
   status_y: number;
   status_r: number;
-  closures_past_year: number;
 }
