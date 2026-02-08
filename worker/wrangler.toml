@@ -1,6 +1,9 @@
-name = "scc-food-api"
+name = "scc-food"
 main = "src/index.ts"
 compatibility_date = "2024-09-01"
+
+[assets]
+directory = "../frontend/public"
 
 [[d1_databases]]
 binding = "DB"

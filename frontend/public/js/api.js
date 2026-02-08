@@ -1,5 +1,4 @@
-// Replace with your Worker URL once deployed
-const API_BASE = "https://scc-food-api.yibai.workers.dev/api";
+const API_BASE = "/api";
 
 export async function fetchStats() {
   const res = await fetch(`${API_BASE}/stats`);

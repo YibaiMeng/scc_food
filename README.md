@@ -36,14 +36,9 @@ Prerequisites: Python 3, Node.js.
    python db/sync.py /path/to/scc_food.db
    ```
 
-3. **Deploy Worker API** — see [worker/README.md](worker/README.md)
+3. **Deploy** — Worker serves both API and static frontend — see [worker/README.md](worker/README.md)
    ```bash
-   cd worker && npm run deploy            # note the *.workers.dev URL
-   ```
-
-4. **Deploy frontend** — set `API_BASE` in `frontend/public/js/api.js` to the Worker URL, then see [frontend/README.md](frontend/README.md)
-   ```bash
-   npx wrangler pages deploy frontend/public --project-name scc-food-map
+   cd worker && npm run deploy
    ```
 
 **Ongoing:** re-run steps 1–2 to refresh data.

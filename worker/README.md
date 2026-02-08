@@ -1,6 +1,6 @@
-# Worker API
+# Worker
 
-Cloudflare Worker serving the JSON API backed by D1.
+Cloudflare Worker serving both the JSON API (under `/api/`) and the static frontend from `frontend/public/`.
 
 ## Endpoints
 
