@@ -10,7 +10,7 @@ export async function handleFacility(id: string, env: Env): Promise<Response> {
   }
 
   const { results: inspections } = await env.DB.prepare(
-    "SELECT * FROM inspection WHERE business_id = ? ORDER BY date DESC"
+    "SELECT * FROM inspection WHERE business_id = ? ORDER BY date DESC, CASE result WHEN 'G' THEN 0 WHEN 'Y' THEN 1 ELSE 2 END"
   ).bind(id).all<{
     inspection_id: string;
     date: string;

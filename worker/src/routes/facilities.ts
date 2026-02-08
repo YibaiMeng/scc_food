@@ -46,7 +46,8 @@ export async function handleFacilities(request: Request, env: Env): Promise<Resp
     LEFT JOIN inspection i ON i.inspection_id = (
       SELECT inspection_id FROM inspection
       WHERE business_id = b.business_id
-      ORDER BY date DESC
+      ORDER BY date DESC,
+        CASE result WHEN 'G' THEN 0 WHEN 'Y' THEN 1 ELSE 2 END
       LIMIT 1
     )
     WHERE b.latitude IS NOT NULL
