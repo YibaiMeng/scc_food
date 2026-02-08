@@ -1,0 +1,7 @@
+venv/
+*.db
+*.csv
+*.log
+__pycache__/
+.claude/
+data/venv/
