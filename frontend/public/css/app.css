@@ -240,6 +240,43 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
 }
 
+/* ── Marker tooltips ─────────────────────────────────────── */
+.tt {
+  padding: 0;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  border-radius: 6px;
+}
+.tt .leaflet-tooltip-content { padding: 0; }
+.tt-card {
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 220px;
+}
+.tt-name {
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tt-row {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.tt-closure {
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
 /* ── Cluster icons ───────────────────────────────────────── */
 .cluster-icon {
   width: 36px;

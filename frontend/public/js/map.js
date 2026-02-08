@@ -13,6 +13,15 @@ function markerColor(result) {
   return RESULT_COLORS[result] ?? RESULT_COLORS.null;
 }
 
+function tooltipContent(f) {
+  const score =
+    f.latest_score !== null ? `<strong>${f.latest_score}</strong>` : "—";
+  const recentR = f.has_recent_red
+    ? '<span class="tt-closure">Recent closure</span>'
+    : "";
+  return `<div class="tt-card"><div class="tt-name">${f.name}</div><div class="tt-row">Score: ${score}${recentR}</div></div>`;
+}
+
 function createMarkerIcon(facility) {
   const color = markerColor(facility.latest_result);
   const pulse = facility.has_recent_red ? " map-marker-pulse" : "";
@@ -65,6 +74,7 @@ export function initMap(facilities, onMarkerClick) {
       fillOpacity: 0.8,
       weight: 1,
     });
+    cm.bindTooltip(tooltipContent(f), { className: "tt", direction: "top", offset: [0, -6] });
     cm.on("click", () => onMarkerClick(f.business_id));
     cm.addTo(canvasLayer);
     canvasMarkers.push(cm);
@@ -103,6 +113,7 @@ export function initMap(facilities, onMarkerClick) {
           icon: createMarkerIcon(f),
           title: f.name,
         });
+        marker.bindTooltip(tooltipContent(f), { className: "tt", direction: "top", offset: [0, -10] });
         marker.on("click", () => onMarkerClick(f.business_id));
         marker.addTo(detailLayer);
       }
