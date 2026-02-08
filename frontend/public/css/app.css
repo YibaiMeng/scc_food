@@ -59,6 +59,40 @@ body {
 .badge-y { background: var(--yellow); }
 .badge-r { background: var(--red); }
 
+.stat-badge-wrap {
+  position: relative;
+}
+.stat-badge-wrap > .stat-badge {
+  cursor: pointer;
+}
+
+.stat-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  z-index: 2000;
+  padding: 4px 0;
+}
+
+.stat-dropdown-item {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-dropdown-item:hover {
+  background: #f1f5f9;
+}
+
 /* ── Main layout ─────────────────────────────────────────── */
 #main {
   flex: 1;
