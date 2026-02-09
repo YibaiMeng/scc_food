@@ -17,9 +17,13 @@ Socrata API → download.py → local SQLite (scc_food.db) → sync.py → Cloud
                                                            └─ /api/facilities/:id
                                                                          ↓
                                                           Static frontend (Leaflet + vanilla JS)
+
+Backfill Worker (cron) → reads inspection IDs from D1
+                        → downloads PDFs from county site
+                        → stores in Cloudflare R2 (scc-food-pdfs bucket)
 ```
 
-Data pipeline (Python) is completely separate from the web app (Worker + frontend).
+Data pipeline (Python) is completely separate from the web app (Worker + frontend). The backfill worker is a disposable cron-based worker for one-time PDF archival.
 
 ## Directory Layout
 
@@ -42,6 +46,8 @@ Data pipeline (Python) is completely separate from the web app (Worker + fronten
 - `pyproject.toml` — Ruff config for Python formatting + linting
 - `.pre-commit-config.yaml` — Git pre-commit hook orchestration (runs Biome + Ruff)
 - `Makefile` — Convenience commands (`make setup`, `make check`)
+- `worker-backfill/wrangler.toml` — Disposable cron worker config: D1 + R2 bindings, fires every minute
+- `worker-backfill/src/index.ts` — Scheduled handler: batch-downloads inspection PDFs from county site into R2, tracks progress in D1 `pdf_status` table, self-stops via metadata flag when complete
 
 ## Database Schema
 
@@ -50,7 +56,8 @@ business: business_id (PK), name, address, city, state, postal_code, latitude, l
 inspection: inspection_id (PK), business_id (FK), date (YYYYMMDD), score (0-100), result ('G'/'Y'/'R'/NULL), type, inspection_comment, first_seen, last_updated
 violation: inspection_id + code (composite PK), description, critical (0/1), violation_comment, first_seen, last_updated
 changes: id (PK), table_name, record_id, field, old_value, new_value, detected_at — audit log for every field change
-metadata: key (PK), value — key-value store for sync timestamps (last_sync, source_updated_at)
+metadata: key (PK), value — key-value store for sync timestamps (last_sync, source_updated_at, backfill_pdfs_done)
+pdf_status: inspection_id (PK), status ('ok'/'not_found'/'error'), r2_key, size_bytes, error_message, created_at — tracks PDF backfill progress per inspection
 ```
 
 ~8,500 facilities, ~22k inspections, ~64k violations.
@@ -144,6 +151,13 @@ python db/sync.py scc_food.db   # needs CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DAT
 
 # Frontend is served as static assets via worker (configured in wrangler.toml)
 
+# PDF backfill (one-time, disposable worker)
+cd worker-backfill && npm install
+npx wrangler r2 bucket create scc-food-pdfs  # one-time
+npm run deploy                                # cron starts (every minute, 50 PDFs/batch)
+npx wrangler tail                             # monitor progress
+npx wrangler delete                           # remove when done
+
 # Linting & formatting (auto-runs on commit via pre-commit hooks)
 make check              # Run all checks on all files
 make setup              # First-time setup after cloning (install pre-commit hooks)
@@ -175,5 +189,7 @@ pre-commit install       # installs git hooks — checks run automatically on ev
 
 - **Socrata Open Data API** (public, no auth): business `vuw7-jmjk`, inspections `2u2d-8jej`, violations `wkaa-4ccv`
 - **Cloudflare D1/Workers/Pages**: Hosting + database (API token needed for sync)
+- **Cloudflare R2** (`scc-food-pdfs` bucket): Stores inspection report PDFs, keyed as `reports/{inspection_id}.pdf`
+- **Santa Clara County DEH** (`stgencep.sccgov.org`): Source for inspection report PDFs at `INSPECTIONREPORT_{inspection_id}.pdf`
 - **OpenStreetMap tiles**: Map background (CDN, free)
 - **Leaflet 1.9.4**: Map library (CDN)

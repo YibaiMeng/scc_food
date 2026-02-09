@@ -43,3 +43,14 @@ CREATE TABLE IF NOT EXISTS metadata (
 CREATE INDEX IF NOT EXISTS idx_inspection_business_date ON inspection (business_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_inspection_business_id ON inspection (business_id);
 CREATE INDEX IF NOT EXISTS idx_violation_inspection_id ON violation (inspection_id);
+
+CREATE TABLE IF NOT EXISTS pdf_status (
+    inspection_id TEXT PRIMARY KEY,
+    status        TEXT NOT NULL,
+    r2_key        TEXT,
+    size_bytes    INTEGER,
+    error_message TEXT,
+    created_at    TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_pdf_status_status ON pdf_status (status);

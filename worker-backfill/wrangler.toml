@@ -1,0 +1,21 @@
+name = "scc-food-backfill"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "scc-food"
+database_id = "39d05335-244e-41b8-9082-4d98f5cd1db5"
+
+[[r2_buckets]]
+binding = "scc_food_pdfs"
+bucket_name = "scc-food-pdfs"
+
+[triggers]
+crons = ["* * * * *"]
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
