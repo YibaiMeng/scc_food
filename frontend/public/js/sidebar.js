@@ -17,7 +17,7 @@ export async function show(businessId) {
   try {
     const detail = await fetchFacility(businessId);
     content.innerHTML = renderDetail(detail);
-  } catch (e) {
+  } catch {
     content.innerHTML = `<p style="color:var(--red)">Failed to load details.</p>`;
   }
 }
@@ -32,7 +32,7 @@ function formatDate(yyyymmdd) {
 
 function daysSince(yyyymmdd) {
   if (!yyyymmdd) return null;
-  const d = new Date(`${yyyymmdd.slice(0,4)}-${yyyymmdd.slice(4,6)}-${yyyymmdd.slice(6,8)}`);
+  const d = new Date(`${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`);
   const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
   return diff;
 }
@@ -54,13 +54,17 @@ function renderViolations(violations) {
   if (!violations.length) return "";
   return `
     <div class="violations-list">
-      ${violations.map(v => `
+      ${violations
+        .map(
+          (v) => `
         <div class="violation-item">
           ${v.critical ? '<div class="violation-critical-dot"></div>' : '<div style="width:6px;flex-shrink:0"></div>'}
           <span class="violation-code">${v.code}</span>
           <span>${v.description}${v.violation_comment ? ` — <em>${v.violation_comment}</em>` : ""}</span>
         </div>
-      `).join("")}
+      `,
+        )
+        .join("")}
     </div>
   `;
 }
@@ -79,7 +83,9 @@ function renderDetail(detail) {
 
     <div class="section-title">Inspection History (${inspections.length})</div>
 
-    ${inspections.map(insp => `
+    ${inspections
+      .map(
+        (insp) => `
       <div class="inspection-card">
         <div class="inspection-header">
           ${insp.score !== null ? `<span class="score-badge ${scoreClass(insp.score)}">${insp.score}</span>` : ""}
@@ -89,6 +95,8 @@ function renderDetail(detail) {
         ${insp.inspection_comment ? `<div class="inspection-comment">${insp.inspection_comment}</div>` : ""}
         ${renderViolations(insp.violations)}
       </div>
-    `).join("")}
+    `,
+      )
+      .join("")}
   `;
 }

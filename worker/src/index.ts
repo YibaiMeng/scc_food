@@ -1,7 +1,7 @@
-import type { Env } from "./types";
 import { handleFacilities } from "./routes/facilities";
 import { handleFacility } from "./routes/facility";
 import { handleStats } from "./routes/stats";
+import type { Env } from "./types";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",

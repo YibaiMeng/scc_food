@@ -1,5 +1,3 @@
-import { show as showSidebar } from "./sidebar.js";
-
 const RESULT_COLORS = {
   G: "#22c55e",
   Y: "#eab308",
@@ -14,11 +12,8 @@ function markerColor(result) {
 }
 
 function tooltipContent(f) {
-  const score =
-    f.latest_score !== null ? `<strong>${f.latest_score}</strong>` : "—";
-  const recentR = f.has_recent_red
-    ? '<span class="tt-closure">Recent closure</span>'
-    : "";
+  const score = f.latest_score !== null ? `<strong>${f.latest_score}</strong>` : "—";
+  const recentR = f.has_recent_red ? '<span class="tt-closure">Recent closure</span>' : "";
   return `<div class="tt-card"><div class="tt-name">${f.name}</div><div class="tt-row">Score: ${score}${recentR}</div></div>`;
 }
 
@@ -29,11 +24,8 @@ function labelContent(f) {
 }
 
 function createMarkerIcon(facility) {
-  const color = markerColor(facility.latest_result);
   const pulse = facility.has_recent_red ? " map-marker-pulse" : "";
-  const resultClass = facility.latest_result
-    ? `map-marker-${facility.latest_result}`
-    : "map-marker-null";
+  const resultClass = facility.latest_result ? `map-marker-${facility.latest_result}` : "map-marker-null";
   return L.divIcon({
     className: "",
     html: `<div class="map-marker ${resultClass}${pulse}"></div>`,
@@ -43,7 +35,7 @@ function createMarkerIcon(facility) {
 }
 
 export function initMap(facilities, onMarkerClick) {
-  const SCC_BOUNDS = L.latLngBounds([36.85, -122.30], [37.50, -121.10]);
+  const SCC_BOUNDS = L.latLngBounds([36.85, -122.3], [37.5, -121.1]);
 
   const map = L.map("map", {
     center: [37.345, -121.983],
@@ -80,7 +72,11 @@ export function initMap(facilities, onMarkerClick) {
       fillOpacity: 0.8,
       weight: 1,
     });
-    cm.bindTooltip(tooltipContent(f), { className: "tt", direction: "top", offset: [0, -6] });
+    cm.bindTooltip(tooltipContent(f), {
+      className: "tt",
+      direction: "top",
+      offset: [0, -6],
+    });
     cm.on("click", () => onMarkerClick(f.business_id));
     cm.addTo(canvasLayer);
     canvasMarkers.push(cm);
@@ -119,7 +115,12 @@ export function initMap(facilities, onMarkerClick) {
           icon: createMarkerIcon(f),
           title: f.name,
         });
-        marker.bindTooltip(labelContent(f), { className: "tt tt-permanent", direction: "top", offset: [0, -10], permanent: true });
+        marker.bindTooltip(labelContent(f), {
+          className: "tt tt-permanent",
+          direction: "top",
+          offset: [0, -10],
+          permanent: true,
+        });
         marker.on("click", () => onMarkerClick(f.business_id));
         marker.addTo(detailLayer);
       }

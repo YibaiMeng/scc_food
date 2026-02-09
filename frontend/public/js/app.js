@@ -1,7 +1,7 @@
-import { fetchStats, fetchFacilities } from "./api.js";
-import { renderStats } from "./stats.js";
+import { fetchFacilities, fetchStats } from "./api.js";
 import { initMap } from "./map.js";
 import { show as showSidebar } from "./sidebar.js";
+import { renderStats } from "./stats.js";
 
 // Show loading overlay
 const overlay = document.createElement("div");

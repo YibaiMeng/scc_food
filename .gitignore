@@ -8,3 +8,4 @@ data/venv/
 node_modules/
 .wrangler/
 worker/node_modules/
+SECRETS.txt

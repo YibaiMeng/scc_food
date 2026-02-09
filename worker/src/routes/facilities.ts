@@ -56,7 +56,9 @@ export async function handleFacilities(request: Request, env: Env): Promise<Resp
     )
     WHERE b.latitude IS NOT NULL
       AND b.longitude IS NOT NULL
-  `).bind(cutoff).all<FacilityMarker>();
+  `)
+    .bind(cutoff)
+    .all<FacilityMarker>();
 
   const response = new Response(JSON.stringify(results), {
     headers: {

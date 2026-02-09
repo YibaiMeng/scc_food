@@ -55,8 +55,7 @@ function getClosures(facilities, days) {
 document.addEventListener("click", closeDropdown);
 
 export function renderStats(stats, facilities, onSelect) {
-  document.getElementById("stat-facilities").textContent =
-    `${stats.total_facilities.toLocaleString()} facilities`;
+  document.getElementById("stat-facilities").textContent = `${stats.total_facilities.toLocaleString()} facilities`;
 
   const yellowBadge = document.getElementById("stat-yellow");
   yellowBadge.textContent = `${stats.status_y.toLocaleString()} yellow`;
@@ -95,9 +94,9 @@ export function renderStats(stats, facilities, onSelect) {
       chip.addEventListener("click", (e) => {
         e.stopPropagation();
         activeDays = Number(chip.dataset.days);
-        document.querySelectorAll("#closures-periods .period-chip").forEach(
-          (c) => c.classList.toggle("active", c === chip)
-        );
+        document
+          .querySelectorAll("#closures-periods .period-chip")
+          .forEach((c) => c.classList.toggle("active", c === chip));
         updateClosures();
         // Refresh dropdown if open
         const wrap = closuresBadge.closest(".stat-badge-wrap");

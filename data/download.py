@@ -1,7 +1,8 @@
 import argparse
 import sqlite3
-import requests
 from datetime import datetime, timezone
+
+import requests
 
 BASE = "https://data.sccgov.org/resource"
 LIMIT = 1000
@@ -67,6 +68,7 @@ CREATE TABLE IF NOT EXISTS changes (
 # Fetch
 # ---------------------------------------------------------------------------
 
+
 def fetch_all(url):
     rows = []
     offset = 0
@@ -86,6 +88,7 @@ def fetch_all(url):
 # ---------------------------------------------------------------------------
 # Normalize raw API rows
 # ---------------------------------------------------------------------------
+
 
 def normalize_business(raw):
     return {
@@ -142,6 +145,7 @@ def _int(v):
 # Upsert with change tracking
 # ---------------------------------------------------------------------------
 
+
 def upsert(conn, table, pk_fields, row, now):
     """
     Insert or update a row. Log any field changes to the `changes` table.
@@ -158,9 +162,7 @@ def upsert(conn, table, pk_fields, row, now):
         cols = list(row.keys()) + ["first_seen", "last_updated"]
         vals = list(row.values()) + [now, now]
         placeholders = ", ".join("?" * len(cols))
-        conn.execute(
-            f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})", vals
-        )
+        conn.execute(f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})", vals)
         return "inserted"
 
     # Compare fields (exclude metadata columns)
@@ -183,7 +185,7 @@ def upsert(conn, table, pk_fields, row, now):
             (table, record_id, field, str(old_val), str(new_val), now),
         )
 
-    set_clause = ", ".join(f"{f} = ?" for f in row.keys()) + ", last_updated = ?"
+    set_clause = ", ".join(f"{f} = ?" for f in row) + ", last_updated = ?"
     conn.execute(
         f"UPDATE {table} SET {set_clause} WHERE {pk_clause}",
         list(row.values()) + [now] + list(pk_values),
@@ -196,9 +198,9 @@ def upsert(conn, table, pk_fields, row, now):
 # ---------------------------------------------------------------------------
 
 SOURCES = [
-    ("business",    f"{BASE}/vuw7-jmjk.json", ["business_id"],              normalize_business),
-    ("inspection",  f"{BASE}/2u2d-8jej.json", ["inspection_id"],            normalize_inspection),
-    ("violation",   f"{BASE}/wkaa-4ccv.json", ["inspection_id", "code"],    normalize_violation),
+    ("business", f"{BASE}/vuw7-jmjk.json", ["business_id"], normalize_business),
+    ("inspection", f"{BASE}/2u2d-8jej.json", ["inspection_id"], normalize_inspection),
+    ("violation", f"{BASE}/wkaa-4ccv.json", ["inspection_id", "code"], normalize_violation),
 ]
 
 

@@ -86,7 +86,7 @@ def main():
         print(f"  {total} rows to push...")
 
         for i in range(0, total, BATCH_SIZE):
-            batch = statements[i:i + BATCH_SIZE]
+            batch = statements[i : i + BATCH_SIZE]
             execute_batch(url, token, batch)
             done = min(i + BATCH_SIZE, total)
             print(f"  {done}/{total}", end="\r")

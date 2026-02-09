@@ -38,6 +38,10 @@ Data pipeline (Python) is completely separate from the web app (Worker + fronten
 - `frontend/public/js/sidebar.js` — Right slide-in panel: business info, inspection history, violations
 - `frontend/public/js/stats.js` — Header stats bar: total/yellow/red/closures badges with clickable dropdown lists, period selector
 - `frontend/public/css/app.css` — All styling (CSS vars for colors, flexbox layout)
+- `biome.json` — Biome config for JS/TS/CSS formatting + linting
+- `pyproject.toml` — Ruff config for Python formatting + linting
+- `.pre-commit-config.yaml` — Git pre-commit hook orchestration (runs Biome + Ruff)
+- `Makefile` — Convenience commands (`make setup`, `make check`)
 
 ## Database Schema
 
@@ -134,6 +138,19 @@ python data/download.py scc_food.db
 python db/sync.py scc_food.db   # needs CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID, CLOUDFLARE_API_TOKEN
 
 # Frontend is served as static assets via worker (configured in wrangler.toml)
+
+# Linting & formatting (auto-runs on commit via pre-commit hooks)
+make check              # Run all checks on all files
+make setup              # First-time setup after cloning (install pre-commit hooks)
+```
+
+## Setup (New Clone)
+
+```bash
+git clone <repo>
+cd scc_food
+pip install pre-commit   # or: pip install -r requirements-dev.txt
+pre-commit install       # installs git hooks — checks run automatically on every commit
 ```
 
 ## Conventions
@@ -145,6 +162,9 @@ python db/sync.py scc_food.db   # needs CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DAT
 - **Frontend**: Vanilla JS with ES6 modules, no build step, no framework
 - **Worker routes**: Each in own file under `worker/src/routes/`
 - **Python**: Functional scripts, section headers with `# ---` comments
+- **Formatting**: Biome (JS/TS/CSS), Ruff (Python) — enforced by pre-commit hooks
+- **Line width**: 120 characters (all languages)
+- **Quotes**: Double quotes (all languages)
 
 ## External Services
 
