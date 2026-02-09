@@ -37,11 +37,28 @@ export async function handleStats(request: Request, env: Env): Promise<Response>
     return new Response(JSON.stringify({ error: "No data" }), { status: 500 });
   }
 
+  // Fetch sync metadata (gracefully handle missing table)
+  let lastSync: string | null = null;
+  let sourceUpdatedAt: string | null = null;
+  try {
+    const meta = await env.DB.prepare(
+      "SELECT key, value FROM metadata WHERE key IN ('last_sync', 'source_updated_at')",
+    ).all<{ key: string; value: string }>();
+    for (const m of meta.results) {
+      if (m.key === "last_sync") lastSync = m.value;
+      if (m.key === "source_updated_at") sourceUpdatedAt = m.value;
+    }
+  } catch {
+    // metadata table may not exist yet
+  }
+
   const stats: Stats = {
     total_facilities: row.total_facilities,
     status_g: row.status_g,
     status_y: row.status_y,
     status_r: row.status_r,
+    last_sync: lastSync,
+    source_updated_at: sourceUpdatedAt,
   };
 
   const response = new Response(JSON.stringify(stats), {

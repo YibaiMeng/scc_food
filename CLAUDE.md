@@ -23,11 +23,11 @@ Data pipeline (Python) is completely separate from the web app (Worker + fronten
 
 ## Directory Layout
 
-- `data/download.py` — Fetches from Socrata API, upserts into local SQLite with full audit trail
+- `data/download.py` — Fetches from Socrata API, upserts into local SQLite with full audit trail, stores Socrata `rowsUpdatedAt` in metadata table
 - `db/schema.sql` — D1 table definitions with indexes
-- `db/sync.py` — Pushes local SQLite → Cloudflare D1 via REST API (batched INSERT OR REPLACE)
+- `db/sync.py` — Pushes local SQLite → Cloudflare D1 via REST API (batched INSERT OR REPLACE), writes `last_sync` timestamp
 - `worker/src/index.ts` — HTTP routing + CORS (entry point)
-- `worker/src/routes/stats.ts` — GET /api/stats (cached 6h)
+- `worker/src/routes/stats.ts` — GET /api/stats (cached 6h), includes `last_sync` and `source_updated_at` from metadata table
 - `worker/src/routes/facilities.ts` — GET /api/facilities — all markers with latest inspection (cached 1h)
 - `worker/src/routes/facility.ts` — GET /api/facilities/:id — full detail with all inspections + violations
 - `worker/src/types.ts` — TypeScript interfaces
@@ -36,7 +36,7 @@ Data pipeline (Python) is completely separate from the web app (Worker + fronten
 - `frontend/public/js/api.js` — Fetch wrappers for the 3 API endpoints
 - `frontend/public/js/map.js` — Leaflet map with dual-layer zoom strategy (canvas circles at overview, CSS div icons at detail zoom >=17)
 - `frontend/public/js/sidebar.js` — Right slide-in panel: business info, inspection history, violations
-- `frontend/public/js/stats.js` — Header stats bar: total/yellow/red/closures badges with clickable dropdown lists, period selector
+- `frontend/public/js/stats.js` — Header stats bar: total/yellow/red/closures badges with clickable dropdown lists, period selector, info panel toggle + freshness display
 - `frontend/public/css/app.css` — All styling (CSS vars for colors, flexbox layout)
 - `biome.json` — Biome config for JS/TS/CSS formatting + linting
 - `pyproject.toml` — Ruff config for Python formatting + linting
@@ -50,6 +50,7 @@ business: business_id (PK), name, address, city, state, postal_code, latitude, l
 inspection: inspection_id (PK), business_id (FK), date (YYYYMMDD), score (0-100), result ('G'/'Y'/'R'/NULL), type, inspection_comment, first_seen, last_updated
 violation: inspection_id + code (composite PK), description, critical (0/1), violation_comment, first_seen, last_updated
 changes: id (PK), table_name, record_id, field, old_value, new_value, detected_at — audit log for every field change
+metadata: key (PK), value — key-value store for sync timestamps (last_sync, source_updated_at)
 ```
 
 ~8,500 facilities, ~22k inspections, ~64k violations.
@@ -61,7 +62,7 @@ Full-viewport app, no scrolling. Three regions stacked vertically/overlapping:
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ HEADER (dark slate, 52px)                                │
-│ "SCC Food Safety Map"  [— facilities] [Y badge] [R badge] [closures badge] [1w 1m 6m 1y] │
+│ "SCC Food Safety Map" [ℹ]  [— facilities] [Y badge] [R badge] [closures badge] [1w 1m 6m 1y] │
 ├────────┬─────────────────────────────────────────────────┤
 │SIDEBAR │                                                 │
 │(360px) │              MAP (Leaflet, fills rest)          │
@@ -72,7 +73,7 @@ Full-viewport app, no scrolling. Three regions stacked vertically/overlapping:
 └────────┴─────────────────────────────────────────────────┘
 ```
 
-**Header**: Dark background (#1e293b). Title left, stats bar right. Stats bar has:
+**Header**: Dark background (#1e293b). Title left, stats bar right. Between title and stats: info button (ℹ) that toggles an info dropdown panel with data source, scoring legend, and freshness timestamps. Stats bar has:
 - Plain text "N facilities" count
 - Yellow pill badge — clickable, opens dropdown listing yellow-status facilities
 - Red pill badge ("closed") — clickable, opens dropdown listing red-status facilities
@@ -111,6 +112,8 @@ Full-viewport app, no scrolling. Three regions stacked vertically/overlapping:
 
 **Closures period chips (1w/1m/6m/1y)**: Clicking a chip re-queries /api/stats with that time window, updates the closures count number and dropdown list. Active chip gets highlighted styling. Does NOT affect map markers (markers always show all data).
 
+**Info button click**: Toggles a dropdown panel showing data source, scoring legend (green/yellow/red), and data freshness ("County portal updated: [date]", "Synced to this site: [date]"). Only one dropdown/panel open at a time.
+
 **Sidebar close**: Click X button → sidebar slides out left (CSS transform transition). Map remains in current position.
 
 ## Key Patterns
@@ -122,6 +125,8 @@ Full-viewport app, no scrolling. Three regions stacked vertically/overlapping:
 - **Caching**: Worker caches stats 6h, facilities 1h, detail views uncached
 - **SQL safety**: All D1 queries use prepared statements with parameter binding
 - **Date format**: YYYYMMDD strings throughout (sortable, no timezone issues)
+- **Map attribution**: Bottom-right shows both "Data: Santa Clara County DEH" and OpenStreetMap credit
+- **Data freshness**: `metadata` table stores `source_updated_at` (from Socrata API `rowsUpdatedAt`) and `last_sync` (written by sync.py). Exposed via `/api/stats`.
 - **Socrata API quirk**: Raw data has typo "inpsection_id" — normalized to "inspection_id" in download.py
 
 ## Dev Commands

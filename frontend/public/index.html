@@ -10,6 +10,25 @@
 <body>
   <header id="header">
     <h1>SCC Food Safety Map</h1>
+    <span class="stat-badge-wrap">
+      <button id="info-btn" class="info-btn" aria-label="About this data">&#x24D8;</button>
+      <div id="info-panel" class="stat-dropdown info-panel" style="display:none">
+        <div class="info-panel-content">
+          <div class="info-section">
+            <div class="info-heading">Data source</div>
+            <div>Food facility inspection data from Santa Clara County Dept. of Environmental Health, published on the
+              <a href="https://data.sccgov.org/Health/SCC_DEH_Food_Data_INSPECTIONS/2u2d-8jej" target="_blank" rel="noopener">county open data portal</a>.</div>
+          </div>
+          <div class="info-section">
+            <div class="info-heading">Inspection scores</div>
+            <div><span class="info-dot" style="background:var(--green)"></span> <strong>Green</strong> (85+) &mdash; Pass</div>
+            <div><span class="info-dot" style="background:var(--yellow)"></span> <strong>Yellow</strong> (70&ndash;84) &mdash; Conditional pass</div>
+            <div><span class="info-dot" style="background:var(--red)"></span> <strong>Red</strong> (&lt;70) &mdash; Closure</div>
+          </div>
+          <div class="info-section" id="info-freshness"></div>
+        </div>
+      </div>
+    </span>
     <div id="stats-bar">
       <span id="stat-facilities">— facilities</span>
       <span class="stat-badge-wrap"><span id="stat-yellow" class="stat-badge badge-y">— yellow</span></span>
@@ -23,6 +42,7 @@
           <button class="period-chip active" data-days="365">1y</button>
         </span>
       </span>
+      <span id="stat-freshness" class="stat-freshness"></span>
     </div>
   </header>
 

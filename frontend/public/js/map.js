@@ -49,7 +49,8 @@ export function initMap(facilities, onMarkerClick) {
   L.control.zoom({ position: "topright" }).addTo(map);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution:
+      'Data: <a href="https://data.sccgov.org">Santa Clara County DEH</a> | © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(map);
 

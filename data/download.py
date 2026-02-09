@@ -227,6 +227,19 @@ def main():
         conn.commit()
         print(f"  {counts['inserted']} inserted, {counts['updated']} updated, {counts['unchanged']} unchanged")
 
+    # Fetch source dataset metadata (rowsUpdatedAt) from Socrata
+    try:
+        meta = requests.get("https://data.sccgov.org/api/views/2u2d-8jej.json", timeout=15).json()
+        rows_updated = meta.get("rowsUpdatedAt")
+        if rows_updated:
+            ts = datetime.fromtimestamp(rows_updated, tz=timezone.utc).isoformat()
+            conn.execute("CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT)")
+            conn.execute("INSERT OR REPLACE INTO metadata (key, value) VALUES ('source_updated_at', ?)", (ts,))
+            conn.commit()
+            print(f"source data last updated: {ts}")
+    except Exception as e:
+        print(f"warning: could not fetch source metadata: {e}")
+
     conn.close()
     print(f"\ndone — {args.db}")
 

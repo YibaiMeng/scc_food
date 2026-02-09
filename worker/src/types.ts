@@ -63,4 +63,6 @@ export interface Stats {
   status_g: number;
   status_y: number;
   status_r: number;
+  last_sync: string | null;
+  source_updated_at: string | null;
 }

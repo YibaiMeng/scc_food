@@ -35,6 +35,11 @@ CREATE TABLE IF NOT EXISTS violation (
     PRIMARY KEY (inspection_id, code)
 );
 
+CREATE TABLE IF NOT EXISTS metadata (
+    key   TEXT PRIMARY KEY,
+    value TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_inspection_business_date ON inspection (business_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_inspection_business_id ON inspection (business_id);
 CREATE INDEX IF NOT EXISTS idx_violation_inspection_id ON violation (inspection_id);

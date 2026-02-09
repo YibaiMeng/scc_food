@@ -11,11 +11,12 @@ import argparse
 import os
 import sqlite3
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
 
-TABLES = ["business", "inspection", "violation"]
+TABLES = ["business", "inspection", "violation", "metadata"]
 BATCH_SIZE = 100  # statements per API request
 
 
@@ -79,7 +80,13 @@ def main():
     print(f"Connecting to {args.db}...")
     conn = sqlite3.connect(args.db)
 
+    # Check which tables exist in local SQLite
+    existing = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+
     for table in TABLES:
+        if table not in existing:
+            print(f"Skipping {table} (not in local db)")
+            continue
         print(f"Syncing {table}...")
         statements = export_table_as_sql(conn, table)
         total = len(statements)
@@ -92,6 +99,18 @@ def main():
             print(f"  {done}/{total}", end="\r")
 
         print(f"  {total}/{total} rows pushed.  ")
+
+    # Write last_sync timestamp to D1
+    now = datetime.now(timezone.utc).isoformat()
+    execute_batch(
+        url,
+        token,
+        [
+            "CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT)",
+            f"INSERT OR REPLACE INTO metadata (key, value) VALUES ('last_sync', {quote_sql(now)})",
+        ],
+    )
+    print(f"last_sync = {now}")
 
     conn.close()
     print("\nSync complete.")

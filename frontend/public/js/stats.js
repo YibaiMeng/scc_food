@@ -1,9 +1,15 @@
 let activeDropdown = null;
+let infoOpen = false;
 
 function closeDropdown() {
   if (activeDropdown) {
     activeDropdown.remove();
     activeDropdown = null;
+  }
+  const panel = document.getElementById("info-panel");
+  if (panel) {
+    panel.style.display = "none";
+    infoOpen = false;
   }
 }
 
@@ -52,7 +58,29 @@ function getClosures(facilities, days) {
   return facilities.filter((f) => f.latest_red_date && f.latest_red_date >= cutoff);
 }
 
+function formatDate(isoStr) {
+  const d = new Date(isoStr);
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+
 document.addEventListener("click", closeDropdown);
+
+// Info button toggle
+const infoBtn = document.getElementById("info-btn");
+const infoPanel = document.getElementById("info-panel");
+if (infoBtn && infoPanel) {
+  infoBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (infoOpen) {
+      closeDropdown();
+    } else {
+      closeDropdown();
+      infoPanel.style.display = "block";
+      infoOpen = true;
+    }
+  });
+  infoPanel.addEventListener("click", (e) => e.stopPropagation());
+}
 
 export function renderStats(stats, facilities, onSelect) {
   document.getElementById("stat-facilities").textContent = `${stats.total_facilities.toLocaleString()} facilities`;
@@ -62,6 +90,25 @@ export function renderStats(stats, facilities, onSelect) {
 
   const redBadge = document.getElementById("stat-red");
   redBadge.textContent = `${stats.status_r.toLocaleString()} closed`;
+
+  // Populate freshness info (panel + header)
+  const freshnessEl = document.getElementById("info-freshness");
+  if (freshnessEl) {
+    const lines = [];
+    if (stats.source_updated_at) {
+      lines.push(`<div class="info-freshness-row">County portal updated: ${formatDate(stats.source_updated_at)}</div>`);
+    }
+    if (stats.last_sync) {
+      lines.push(`<div class="info-freshness-row">Synced to this site: ${formatDate(stats.last_sync)}</div>`);
+    }
+    if (lines.length) {
+      freshnessEl.innerHTML = `<div class="info-heading">Data freshness</div>${lines.join("")}`;
+    }
+  }
+  const headerFreshness = document.getElementById("stat-freshness");
+  if (headerFreshness && stats.source_updated_at) {
+    headerFreshness.textContent = `County data: ${formatDate(stats.source_updated_at)}`;
+  }
 
   if (facilities && onSelect) {
     setupBadgeDropdown(yellowBadge, facilities, "Y", onSelect);
