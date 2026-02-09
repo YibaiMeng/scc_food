@@ -2,7 +2,9 @@ import type { Env, Stats } from "../types";
 
 export async function handleStats(request: Request, env: Env): Promise<Response> {
   const cache = caches.default;
-  const cacheKey = new Request(new URL(request.url).toString());
+  const url = new URL(request.url);
+  url.searchParams.set("_v", env.CF_VERSION.id);
+  const cacheKey = new Request(url.toString());
 
   const cached = await cache.match(cacheKey);
   if (cached) return cached;

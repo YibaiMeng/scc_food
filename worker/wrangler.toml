@@ -5,6 +5,9 @@ compatibility_date = "2024-09-01"
 [assets]
 directory = "../frontend/public"
 
+[version_metadata]
+binding = "CF_VERSION"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "scc-food"

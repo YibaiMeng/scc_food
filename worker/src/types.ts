@@ -1,6 +1,7 @@
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
+  CF_VERSION: { id: string };
 }
 
 export interface FacilityMarker {
